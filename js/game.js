@@ -1,8 +1,6 @@
-class Game {
-  constructor() {
-    if (!localStorage.getItem("termoon-game")) {
-      localStorage.setItem("termoon-game", {})
-    }
+class GameSettings {
+  constructor () {
+
   }
 
   setWords(array) {
@@ -10,7 +8,6 @@ class Game {
   }
 
   setWordDay() {
-
     this.getIdxFromDate(this.words.length)
     this.wordDay = this.words[idx];
   }
@@ -27,7 +24,27 @@ class Game {
 
     const now = (date.toISOString().slice(0, 10).replace(/-/g, ''))
     const idx = (hash(now) % arrayLength);
+    return idx
+  }
+}
 
-    return now
+class Game {
+  constructor(targetGame) {
+    this.targets = {
+      game: targetGame,
+      row: undefined
+    }
+  }
+
+  focus(event){
+    // if (e)
+  }
+
+  nextInput() {
+
+  }
+
+  nextRow() {
+
   }
 }

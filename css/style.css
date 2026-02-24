@@ -1,0 +1,128 @@
+* {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #15202b;
+  display: flex;
+  justify-content: center;
+}
+
+main {
+  /* DEV ↓ */
+  margin-top: 4vw;
+}
+
+/* ====== Game ====== */
+
+#game {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#game .row fieldset {
+  display: flex;
+  gap: 10px;
+}
+
+#game .row input {
+  width: 4.2rem;
+  height: 4.2rem;
+  background-color: #223447;
+  border-radius: 5px;
+  outline: none;
+  font-size: 2.7rem;
+  color: white;
+  text-transform: uppercase;
+  user-select: none !important;
+  text-align: center;
+  font-family: "Mitr", sans-serif;
+  font-weight: 500;
+  padding: 3px;
+}
+
+#game .row.row-selected input {
+  background-color: transparent;
+  border: .3rem solid #0C486C;
+  transition: .15s ease-in;
+}
+#game .row.row-selected input::selection {
+  background: transparent;
+  color: #a5d7f8;
+}
+
+#game .row.row-selected input:focus {
+  caret-color: transparent;
+  background-color: transparent;
+  border-bottom: .7rem solid #0C486C;
+}
+
+#game .row input.selected {
+  background-color: transparent;
+}
+
+@media (min-width: 1024px) {
+  #game .row input {
+    width: 4.7rem;
+    height: 4.7rem;
+  }
+}
+
+/* ====== Keyboard ====== */
+#keyboard {
+  margin-top: 40px;
+  /* padding-right: 20px; */
+  display: flex;
+  justify-content: end;
+  gap: 20px;
+  font-family: "Mitr", sans-serif;
+}
+
+#keyboard [class^="kbd-"] {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #40B3FF;
+  border-radius: 6px;
+  cursor: pointer;
+  height: 3rem
+}
+
+#keyboard .kbd-delete {
+  width: 5rem;
+}
+
+#keyboard .kbd-delete i {
+  font-size: 1.2rem;
+}
+
+#keyboard .kbd-enter {
+  height: 3rem;
+  width: 4.2rem;
+  font-weight: 400;
+  position: relative;
+  border-radius: 6px 6px 0px 6px !important;
+  font-size: 1rem;
+}
+
+#keyboard .kbd-enter::before {
+  content: '';
+  position: absolute;
+  width: 70%;
+  right: 0;
+  top: 3rem;
+  height: 2.6rem;
+  background-color: #40B3FF;
+  z-index: -1;
+  border-radius: 0px 0px 6px 6px;
+}
+
+#keyboard [class^="kbd-"]:hover, #keyboard .kbd-enter:hover::before{
+  background-color: #115c8b;
+  color: white;
+  transition: .1s linear;
+}
