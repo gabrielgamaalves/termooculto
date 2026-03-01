@@ -136,10 +136,10 @@ class GameSetup {
   constructor() {
     /** @type {SimpleStorage} */
     this.gamedata = new SimpleStorage("termooculto")
-    
+
     /** @type {string[]} */
     this.words = []
-    
+
     /** @type {string} */
     this.wordDay = ""
   }
@@ -160,7 +160,7 @@ class GameSetup {
   setWordDay() {
     /** @type {number} */
     const at = Number(this.gamedata.get("validAt") || -1)
-    
+
     if (at < Date.now()) {
       /** @type {number} */
       const idx = this.getPositionFromDate(this.words.length)
@@ -214,9 +214,89 @@ class GameSetup {
 
     /** @type {string} */
     const now = (date.toISOString().slice(0, 10).replace(/-/g, ''))
-    
+
     /** @type {number} */
     const idx = (hash(now) % arrayLength);
     return idx
   }
 }
+
+
+class Game {
+  constructor() {
+    this.gameSetup = new GameSetup()
+    this.targets = {
+      row: undefined,
+      inputs: undefined,
+    }
+  }
+}
+function nextInput(event) {
+  const target = event.target
+  const nextElementSibling = target?.nextElementSibling
+  if (nextElementSibling) return nextElementSibling.focus()
+}
+
+function backInput(event, BACKSPACE) {
+  const target = event.target
+
+  if (BACKSPACE) target.value = ""
+  
+  const previousElementSibling = target.previousElementSibling
+  if (previousElementSibling) return previousElementSibling.focus()
+}
+
+function keyUpInput(event) {
+  event.preventDefault()
+
+  const eventKey = (event.key === " ") ? "SPACE" : event.key.toUpperCase()
+  const eventTarget = event.target
+  
+  console.log(eventKey)
+
+  const acceptedKeys = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""), "BACKSPACE", "ENTER", "TAB", "SPACE", "ARROWRIGHT", "ARROWLEFT"]
+  if (!(!!acceptedKeys.find(a => a === eventKey))) return false
+
+  switch (eventKey) {
+    case "ENTER":
+      console.log("ENTER")
+      break;
+
+    case "BACKSPACE":
+      backInput(event, true)
+      break;
+
+    case "ARROWLEFT":
+      backInput(event, false)
+      break;
+    
+    case "ARROWRIGHT":
+    case "TAB":
+    case "SPACE":
+      nextInput(event)
+      break;
+
+    default:
+      eventTarget.value = eventKey
+      nextInput(event)
+      break;
+  }
+  // if (eventKey === "BACKSPACE") return retornInput(event)
+
+  // const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
+  // if (!(!!letters.find(l => l === eventKey))) {
+  //   if (eventTarget.value)
+  //   return eventTarget.value = "";
+  //   if ()
+  // }
+
+  // return nextInput(event.target)
+  // // console.log(event)
+};
+
+[...document.querySelectorAll(".row-selected fieldset > input")].forEach(function (inpt) {
+  inpt.addEventListener("keyup", keyUpInput)
+})
+
+// const cs = new GameSetup()
+// cs.
