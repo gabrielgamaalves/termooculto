@@ -21,12 +21,12 @@ main {
 #game {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 #game .row fieldset {
   display: flex;
-  gap: 10px;
+  gap: 6px;
 }
 
 #game .row input {
@@ -73,13 +73,15 @@ main {
 }
 
 /* ====== Keyboard ====== */
+
 #keyboard {
-  margin-top: 40px;
+  margin-top: 20px;
   /* padding-right: 20px; */
   display: flex;
   justify-content: end;
   gap: 20px;
   font-family: "Mitr", sans-serif;
+  user-select: none;
 }
 
 #keyboard [class^="kbd-"] {
@@ -125,4 +127,27 @@ main {
   background-color: #115c8b;
   color: white;
   transition: .1s linear;
+}
+
+@keyframes errorNoAcceptedKeyAnime{
+  0% {
+    transform: rotateZ(3deg);
+  }
+  40% {
+    transform: rotateZ(-3deg);
+  }
+  60% {
+    transform: rotateZ(3deg);
+  }
+  90% {
+    transform: rotateZ(-3deg);
+  }
+  100% {
+    transform: rotateZ(-3deg);
+  }
+}
+
+.error-no-accept-key {
+  border: 0.3rem solid #ef4444; 
+  animation: errorNoAcceptedKeyAnime .3s ease-in; 
 }

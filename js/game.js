@@ -132,7 +132,7 @@ class SimpleStorage extends Map {
 /**
  * GameSetup class for managing word-of-the-day game configuration
  */
-class GameSetup {
+class GameWord {
   constructor() {
     /** @type {SimpleStorage} */
     this.gamedata = new SimpleStorage("termooculto")
@@ -163,7 +163,7 @@ class GameSetup {
 
     if (at < Date.now()) {
       /** @type {number} */
-      const idx = this.getPositionFromDate(this.words.length)
+      const idx = this.getIndexFromDay(this.words.length)
       this.wordDay = this.words[idx];
 
       /**
@@ -197,7 +197,7 @@ class GameSetup {
    * @param {Date} [date=new Date()] - Date to calculate position from
    * @returns {number} Index position in the array
    */
-  getPositionFromDate(arrayLength, date = (new Date())) {
+  getIndexFromDay(arrayLength, date = (new Date())) {
     /**
      * Generate a hash from a string
      * @param {string} str - Input string to hash
@@ -212,10 +212,7 @@ class GameSetup {
       return Math.abs(hash);
     }
 
-    /** @type {string} */
     const now = (date.toISOString().slice(0, 10).replace(/-/g, ''))
-
-    /** @type {number} */
     const idx = (hash(now) % arrayLength);
     return idx
   }
@@ -223,80 +220,128 @@ class GameSetup {
 
 
 class Game {
-  constructor() {
-    this.gameSetup = new GameSetup()
+  constructor(words) {
+    this.word = new GameWord()
+    this.word.setWords(words)
+    this.word.setWordDay()
+
+    this.COMPLETE_GAME = false
+    this.INDEX_ROW = 1
+    this.MAX_ROWS = 6
+    this.INPUTS_LENGTH = 4
+
     this.targets = {
       row: undefined,
-      inputs: undefined,
+      inputs: undefined
+    }
+
+    this.setRow(this.INDEX_ROW) /* Auto Set Row */
+  }
+
+  setRow(offset) {
+    if (offset >= this.MAX_ROWS) {
+      return this.COMPLETE_GAME = true
+    }
+    if (this.INDEX_ROW > 0) {
+      document.getElementById(`row-${this.INDEX_ROW}`).classList.remove("row-selected")
+    }
+
+    this.targets.row = document.getElementById(`row-${offset}`)
+    this.targets.row.classList.add("row-selected")
+
+    this.targets.inputs = [...this.targets.row.querySelectorAll("fieldset > input")]
+    console.log(this.targets.inputs)
+    this.targets.inputs.forEach(input => {
+      new InputController(input, {
+        onEnter: () => this.validationWord()
+      })
+    })
+  }
+
+  validationWord() {
+    const word = this.targets.inputs.map(input => input.value.trim()).join("").toUpperCase()
+    if (word === this.word.wordDay.toUpperCase()) {
+      alert("VENCEU!")
     }
   }
 }
-function nextInput(event) {
-  const target = event.target
-  const nextElementSibling = target?.nextElementSibling
-  if (nextElementSibling) return nextElementSibling.focus()
-}
 
-function backInput(event, BACKSPACE) {
-  const target = event.target
+class InputController {
+  constructor(target, callbacks) {
+    this.target = target
+    this.callbacks = callbacks
 
-  if (BACKSPACE) target.value = ""
-  
-  const previousElementSibling = target.previousElementSibling
-  if (previousElementSibling) return previousElementSibling.focus()
-}
-
-function keyUpInput(event) {
-  event.preventDefault()
-
-  const eventKey = (event.key === " ") ? "SPACE" : event.key.toUpperCase()
-  const eventTarget = event.target
-  
-  console.log(eventKey)
-
-  const acceptedKeys = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""), "BACKSPACE", "ENTER", "TAB", "SPACE", "ARROWRIGHT", "ARROWLEFT"]
-  if (!(!!acceptedKeys.find(a => a === eventKey))) return false
-
-  switch (eventKey) {
-    case "ENTER":
-      console.log("ENTER")
-      break;
-
-    case "BACKSPACE":
-      backInput(event, true)
-      break;
-
-    case "ARROWLEFT":
-      backInput(event, false)
-      break;
-    
-    case "ARROWRIGHT":
-    case "TAB":
-    case "SPACE":
-      nextInput(event)
-      break;
-
-    default:
-      eventTarget.value = eventKey
-      nextInput(event)
-      break;
+    target.addEventListener("keyup", (event) => this.handleKeyUp(event, this))
   }
-  // if (eventKey === "BACKSPACE") return retornInput(event)
 
-  // const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
-  // if (!(!!letters.find(l => l === eventKey))) {
-  //   if (eventTarget.value)
-  //   return eventTarget.value = "";
-  //   if ()
-  // }
+  focusNextInput() {
+    const nextElementSibling = this.target?.nextElementSibling
+    if (nextElementSibling) return nextElementSibling.focus()
+  }
 
-  // return nextInput(event.target)
-  // // console.log(event)
-};
+  focusPreviousInput(BACKSPACE) {
+    if (BACKSPACE) this.target.value = ""
 
-[...document.querySelectorAll(".row-selected fieldset > input")].forEach(function (inpt) {
-  inpt.addEventListener("keyup", keyUpInput)
-})
+    const previousElementSibling = this.target?.previousElementSibling
+    if (previousElementSibling) return previousElementSibling.focus()
+  }
 
-// const cs = new GameSetup()
-// cs.
+  enter() {
+    this.callbacks.onEnter()
+  }
+
+  handleKeyUp(event, self) {
+    event.preventDefault()
+
+    const eventKey = (event.key === " ") ? "SPACE" : event.key.toUpperCase()
+    const eventTarget = event.target
+
+    const IGNORE_CONTROL_KEYS = ["SHIFT", "ARROWUP", "ARROWDOWN"]
+    if (IGNORE_CONTROL_KEYS.includes(eventKey)) return
+
+    const LETTERS = /^[A-Z]$/
+    const CONTROL_KEYS = ["BACKSPACE", "ENTER", "TAB", "SPACE", "ARROWRIGHT", "ARROWLEFT"]
+    if (
+      !LETTERS.test(eventKey) &&
+      !CONTROL_KEYS.includes(eventKey)
+    ) {
+      eventTarget.value = ""
+      eventTarget.classList.add("error-no-accept-key")
+
+      setTimeout(() => {
+        eventTarget.classList.remove("error-no-accept-key")
+      }, 500)
+      return
+    }
+
+    switch (eventKey) {
+      case "ENTER":
+        self.enter()
+        break;
+      case "BACKSPACE":
+        self.focusPreviousInput(true)
+        break;
+      case "ARROWLEFT":
+        self.focusPreviousInput(false)
+        break;
+      case "ARROWRIGHT":
+      case "TAB":
+      case "SPACE":
+        self.focusNextInput()
+        break;
+      default:
+        eventTarget.value = eventKey
+        self.focusNextInput()
+        break;
+    }
+
+    return
+  }
+
+  delete() {
+    this.target.removeEventListener("keyup")
+    return true
+  }
+}
+
+new Game(["opera", "mamae"])
