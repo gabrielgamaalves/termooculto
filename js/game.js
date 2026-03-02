@@ -181,14 +181,13 @@ class GameWord {
       this.gamedata.set("validAt", validAt())
       this.gamedata.set("word", this.wordDay)
       this.gamedata.save()
-
-      return this.wordDay
     }
     else {
       /** @type {string} */
       this.wordDay = this.gamedata.get("word")
-      return this.wordDay
     }
+
+    return this.wordDay
   }
 
   /**
@@ -216,6 +215,22 @@ class GameWord {
     const idx = (hash(now) % arrayLength);
     return idx
   }
+
+  normalize(word) {
+    const wordNormalize = word
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+      .toUpperCase();
+
+    return wordNormalize
+  }
+
+  find(string) {
+    return this.words.find(word => this.normalize(word) === this.normalize(string))
+  }
+
+  includes(string) {
+    return !!this.find(string)
+  }
 }
 
 
@@ -236,6 +251,7 @@ class Game {
     }
 
     this.setRow(this.INDEX_ROW) /* Auto Set Row */
+    console.log(this.word.wordDay) // DEV
   }
 
   setRow(offset) {
@@ -259,10 +275,45 @@ class Game {
   }
 
   validationWord() {
-    const word = this.targets.inputs.map(input => input.value.trim()).join("").toUpperCase()
-    if (word === this.word.wordDay.toUpperCase()) {
-      alert("VENCEU!")
-    }
+    /** @type {String} */
+    const word = this.word.normalize(this.targets.inputs.map(input => input.value.trim()).join(""))
+
+    /** @type {String} */
+    const wordDayNormalize = this.word.normalize(this.word.wordDay)
+
+    if (!this.word.includes(word))
+      return alert("invalido")
+
+    const
+      /** @type {Array} */
+      wordArray = word.split(""),
+      /** @type {Array} */
+      wordDayArray = wordDayNormalize.split(""),
+
+      /** @type {Array} */
+      availableLetters = [...wordDayArray]
+
+    const lettersIndex = wordArray.map(function (letter, i) {
+      if (wordDayArray[i] === letter) {
+        availableLetters[i] = null;
+        return [letter, i];
+      }
+
+      const availableIndex = availableLetters.findIndex(l => l === letter);
+
+      if (availableIndex !== -1) {
+        availableLetters[availableIndex] = null;
+        return [letter, availableIndex];
+      }
+
+      return [letter, -1];
+    })
+
+    console.log({
+      palavra: word,
+      palavraDoDia: wordDay,
+      resultado: lettersIndex
+    });
   }
 }
 
@@ -344,4 +395,4 @@ class InputController {
   }
 }
 
-new Game(["opera", "mamae"])
+// new Game(["opera", "mamae"])

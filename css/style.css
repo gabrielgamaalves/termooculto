@@ -148,6 +148,6 @@ main {
 }
 
 .error-no-accept-key {
-  border: 0.3rem solid #ef4444; 
+  border: 0.3rem solid #ef4444 !important; 
   animation: errorNoAcceptedKeyAnime .3s ease-in; 
 }
