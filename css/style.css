@@ -129,25 +129,42 @@ main {
   transition: .1s linear;
 }
 
-@keyframes errorNoAcceptedKeyAnime{
+@keyframes shakeAnime{
   0% {
-    transform: rotateZ(3deg);
+    transform: rotateZ(3deg) translateX(3%);
   }
   40% {
-    transform: rotateZ(-3deg);
+    transform: rotateZ(-3deg) translateX(-3%);
   }
   60% {
-    transform: rotateZ(3deg);
+    transform: rotateZ(3deg) translateX(3%);
   }
   90% {
-    transform: rotateZ(-3deg);
+    transform: rotateZ(-3deg) translateX(-3%);
   }
   100% {
-    transform: rotateZ(-3deg);
+    transform: rotateZ(0deg) translateX(0%);
   }
 }
 
-.error-no-accept-key {
-  border: 0.3rem solid #ef4444 !important; 
-  animation: errorNoAcceptedKeyAnime .3s ease-in; 
+/* GameUI */
+
+.no-exists-word {
+  /* border: 0.3rem solid #ef4444 !important;  */
+  animation: shakeAnime .3s ease-in; 
+}
+
+.letter-right {
+  background-color: #6bdf95 !important;
+  border: none !important;
+}
+
+.letter-place {
+  background-color: #cfb54b !important;
+  border: none !important;
+}
+
+.letter-wrong {
+  background-color: #0f2635 !important;
+  border: none !important;
 }
