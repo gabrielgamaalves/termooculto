@@ -233,6 +233,82 @@ class GameWord {
   }
 }
 
+class GameUI {
+  constructor(gameTargets) {
+    this.targets = gameTargets
+  }
+
+  availableLetters(word, wordDay) {
+    const
+      /** @type {Array} */
+      wordArray = word.split(""),
+      /** @type {Array} */
+      wordDayArray = wordDay.split("")
+
+    const
+      /** @type {Array} */
+      availableLetters = [...wordDayArray],
+      letters = wordArray.map(function (letter, i) {
+        if (wordDayArray[i] === letter) {
+          availableLetters[i] = null;
+          return [letter, i];
+        }
+
+        const availableIndex = availableLetters.findIndex(l => l === letter);
+        if (availableIndex !== -1) {
+          availableLetters[availableIndex] = null;
+          return [letter, availableIndex];
+        }
+
+        return [letter, -1];
+      })
+
+    for (const [index, [letter, indexFromWordDay]] of letters.entries()) {
+      switch (indexFromWordDay) {
+        case index:
+          this.letterUI(index).right()
+          break;
+        case -1:
+          this.letterUI(index).wrong()
+          break;
+        default:
+          this.letterUI(index).place()
+          break;
+      }
+    }
+  }
+
+  missingLetters() {
+    const row = this.targets.row
+    this.shakeAnime(row)
+  }
+
+  noExistsWord() {
+    const row = this.targets.row
+    this.shakeAnime(row)
+  }
+
+  letterUI(indexInput) {
+    const inputTarget = this.targets.inputs[indexInput]
+    return {
+      right: () => inputTarget.classList.add("letter-right"),
+      place: () => inputTarget.classList.add("letter-place"),
+      wrong: () => inputTarget.classList.add("letter-wrong")
+    }
+  }
+
+  shakeAnime(target, delay_ms = 0) {
+    const DELAY_REMOVE_ANIME = 
+      (elapsedTime, delay_ms = 0) => (Number(elapsedTime.toFixed(3)) * 1000) + delay_ms
+
+    target.classList.add("anime-shake")
+    target.addEventListener('animationend', (anime) => {
+      setTimeout(() => {
+        target.classList.remove("anime-shake")
+      }, DELAY_REMOVE_ANIME(anime.elapsedTime, delay_ms))
+    });
+  }
+}
 
 class Game {
   COMPLETE_GAME = false
@@ -263,7 +339,7 @@ class Game {
   }
 
   setRow(offset) {
-    if (offset >= this.MAX_ROWS) {
+    if (offset > this.MAX_ROWS) {
       return this.COMPLETE_GAME = true
     }
 
@@ -279,115 +355,43 @@ class Game {
     this.targets.row.querySelector("fieldset").disabled = false
 
     this.targets.inputs = [...this.targets.row.querySelectorAll("fieldset > input")]
+    this.targets.inputs[0].focus()
     this.targets.inputs.forEach(input => {
       new InputController(input, {
-        onEnter: () => this.validationWord()
+        onEnter: () => this.availableWord()
       })
     })
-    this.targets.inputs[0].focus()
   }
 
-  validationWord() {
+  availableWord() {
     const
       /** @type {String} */
       word = this.word.normalize(this.targets.inputs.map(input => input.value.trim()).join("")),
       /** @type {String} */
       wordDayNormalize = this.word.normalize(this.word.wordDay)
 
-    if (!this.word.includes(word))
+    if (word.length < 4)
+      return this.ui.missingLetters()
+
+    if(!this.word.includes(word))
       return this.ui.noExistsWord()
 
-    const
-      /** @type {Array} */
-      wordArray = word.split(""),
-      /** @type {Array} */
-      wordDayArray = wordDayNormalize.split("")
+    this.ui.availableLetters(word, wordDayNormalize)
 
-    const
-      /** @type {Array} */
-      availableLetters = [...wordDayArray],
-      letters = wordArray.map(function (letter, i) {
-        if (wordDayArray[i] === letter) {
-          availableLetters[i] = null;
-          return [letter, i];
-        }
-
-        const availableIndex = availableLetters.findIndex(l => l === letter);
-        if (availableIndex !== -1) {
-          availableLetters[availableIndex] = null;
-          return [letter, availableIndex];
-        }
-
-        return [letter, -1];
-      })
-
-    for (const [index, [letter, indexFromWordDay]] of letters.entries()) {
-      switch (indexFromWordDay) {
-        case index:
-          this.ui.letterRight(index)
-          break;
-        case -1:
-          this.ui.letterWrong(index)
-          break;
-        default:
-          this.ui.letterPlace(index)
-          break;
-      }
-    }
-
-    if (word === wordDayNormalize) {
-      return alert("VOCÊ VENCEU!")
-    }
-    else if (this.INDEX_ROW === this.MAX_ROWS) {
-      return alert("GAME OVER")
-    }
-    else {
-      this.setRow(this.INDEX_ROW + 1)
-    }
-
-
-    // console.log({
-    //   palavra: word,
-    //   palavraDoDia: wordDayNormalize,
-    //   resultado: lettersIndex
-    // });
-
-  }
-  game
-}
-
-class GameUI {
-  constructor(gameTargets) {
-    this.targets = gameTargets
+    if (wordDayNormalize === word)
+      return this.victory()
+    else if (this.INDEX_ROW <= 6)
+      return this.setRow(this.INDEX_ROW + 1)
+    else
+      return this.gameover()
   }
 
-  noExistsWord() {
-    const row = this.targets.row
-    const DELAY_REMOVE_ANIME = (elapsedTime, DELAYms = 0) => (Number(elapsedTime.toFixed(3)) * 1000) + DELAYms
-
-    row.classList.add("no-exists-word")
-    row.addEventListener('animationend', (anime) => {
-      setTimeout(() => {
-        row.classList.remove("no-exists-word")
-      }, DELAY_REMOVE_ANIME(anime.elapsedTime))
-    });
+  victory() {
+    setTimeout(() => { alert("VITÓRIA!") })
   }
 
-  // Letter
-
-  letterRight(indexInput) {
-    this.targets.inputs[indexInput]
-      .classList.add("letter-right")
-  }
-
-  letterPlace(indexInput) {
-    this.targets.inputs[indexInput]
-      .classList.add("letter-place")
-  }
-
-  letterWrong(indexInput) {
-    this.targets.inputs[indexInput]
-      .classList.add("letter-wrong")
+  gameover() {
+    setTimeout(() => { alert("VOCÊ PERDEU!") })
   }
 }
 

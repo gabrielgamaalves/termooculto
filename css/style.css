@@ -149,10 +149,14 @@ main {
 
 /* GameUI */
 
-.no-exists-word {
-  /* border: 0.3rem solid #ef4444 !important;  */
+.anime-shake {
   animation: shakeAnime .3s ease-in; 
 }
+
+/* .no-exists-word {
+  border: 0.3rem solid #ef4444 !important;
+  animation: shakeAnime .3s ease-in; 
+} */
 
 .letter-right {
   background-color: #6bdf95 !important;
